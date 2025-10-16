@@ -1,0 +1,2518 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Idiom Daily - 영어 숙어 학습</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 경고 메시지 숨기기 */
+        .tw-dev-warning {
+            display: none !important;
+        }
+        
+        /* Container Query 지원을 위한 커스텀 스타일 */
+        .container-query {
+            container-type: inline-size;
+        }
+        
+        @container (min-width: 640px) {
+            .container\:grid-cols-3 {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+        }
+        
+        @container (max-width: 639px) {
+            .container\:text-sm {
+                font-size: 0.875rem;
+            }
+        }
+
+        /* 버튼 호버 효과 강화 */
+        button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        /* 클릭 가능한 요소들 강조 */
+        [onclick], button {
+            cursor: pointer !important;
+            user-select: none;
+        }
+
+        /* 진행률 바 애니메이션 */
+        #progressFill {
+            transition: width 0.5s ease-in-out;
+        }
+
+        /* 광고 배너 스타일 */
+        #adBannerContainer {
+            min-height: 60px;
+            height: 60px;
+        }
+
+        #adBannerTrack {
+            height: 100%;
+        }
+
+        .ad-item {
+            min-width: 100%;
+            flex-shrink: 0;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 h-dvh overflow-hidden flex flex-col">
+    <!-- Main Container with Dynamic Viewport Height -->
+    <div class="flex-1 overflow-y-auto">
+        <div class="container-query max-w-4xl mx-auto p-4 sm:p-6 min-h-dvh flex flex-col">
+            <!-- Header -->
+            <header class="text-center mb-6 pt-4">
+                <h1 class="text-3xl sm:text-4xl font-bold text-gray-800 mb-2">Idiom Daily</h1>
+                <p class="text-gray-600 container:text-sm">매일 배우는 영어 숙어</p>
+            </header>
+
+            <!-- Loading Indicator -->
+            <div id="loadingIndicator" class="hidden bg-white rounded-xl shadow-sm p-6 border border-gray-200 text-center">
+                <div class="text-gray-600">숙어를 가져오는 중...</div>
+                <div class="mt-3">
+                    <div class="animate-spin inline-block w-6 h-6 border-4 border-current border-t-transparent text-gray-600 rounded-full"></div>
+                </div>
+            </div>
+
+            <!-- Main Content Area -->
+            <main class="flex-1 space-y-4">
+                <!-- 알람 설정 -->
+                <section class="bg-white rounded-xl shadow-sm p-4 sm:p-6 border border-gray-200">
+                    <h3 class="text-center font-semibold text-gray-700 mb-4">학습 알람 설정</h3>
+                    <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+                        <input type="time" id="alarmTime" value="09:00" 
+                            class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 w-full sm:w-auto">
+                        <button id="setAlarmBtn"
+                            class="px-6 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-800 transition-colors w-full sm:w-auto">
+                            알람 설정
+                        </button>
+                        <button id="cancelAlarmBtn"
+                            class="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors w-full sm:w-auto">
+                            알람 해제
+                        </button>
+                    </div>
+                    <div id="alarmStatus" class="mt-4 text-center py-2 px-4 rounded-lg bg-gray-100 text-gray-600">
+                        알람이 설정되지 않았습니다
+                    </div>
+                </section>
+
+                <!-- 레벨 선택 -->
+                <section class="bg-white rounded-xl shadow-sm p-4 sm:p-6 border border-gray-200">
+                    <h2 class="text-center text-lg sm:text-xl font-semibold text-gray-700 mb-4">학습 레벨을 선택하세요</h2>
+                    <div class="grid grid-cols-1 @container:grid-cols-3 gap-3">
+                        <button class="level-btn py-3 px-4 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium text-sm sm:text-base" 
+                            data-level="beginner">
+                            초급
+                        </button>
+                        <button class="level-btn py-3 px-4 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium text-sm sm:text-base" 
+                            data-level="intermediate">
+                            중급
+                        </button>
+                        <button class="level-btn py-3 px-4 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium text-sm sm:text-base" 
+                            data-level="advanced">
+                            고급
+                        </button>
+                    </div>
+                </section>
+
+                <!-- 통계 -->
+                <section class="grid grid-cols-3 gap-2 sm:gap-3">
+                    <div class="bg-white rounded-xl shadow-sm p-3 sm:p-4 border border-gray-200 text-center">
+                        <div class="text-xl sm:text-2xl font-bold text-gray-700" id="streakCount">0</div>
+                        <div class="text-xs sm:text-sm text-gray-500 mt-1">연속일</div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm p-3 sm:p-4 border border-gray-200 text-center">
+                        <div class="text-xl sm:text-2xl font-bold text-gray-700" id="totalLearned">0</div>
+                        <div class="text-xs sm:text-sm text-gray-500 mt-1">학습 숙어</div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm p-3 sm:p-4 border border-gray-200 text-center">
+                        <div class="text-xl sm:text-2xl font-bold text-gray-700" id="quizScore">0%</div>
+                        <div class="text-xs sm:text-sm text-gray-500 mt-1">정답률</div>
+                    </div>
+                </section>
+
+                <!-- 학습 섹션 -->
+                <section id="learningSection" class="bg-white rounded-xl shadow-sm p-4 sm:p-6 border border-gray-200 hidden">
+                    <!-- Progress Bar -->
+                    <div class="w-full bg-gray-200 rounded-full h-2 mb-4 sm:mb-6 overflow-hidden">
+                        <div class="bg-gray-600 h-full transition-all duration-500" id="progressFill" style="width: 0%"></div>
+                    </div>
+
+                    <!-- 숙어 카드 -->
+                    <div class="idiom-card text-center mb-4 sm:mb-6">
+                        <div class="text-xl sm:text-2xl font-bold text-gray-800 mb-3 sm:mb-4 flex items-center justify-center gap-2 sm:gap-3 flex-wrap" id="idiomTitle">
+                            오늘의 숙어를 선택하세요
+                        </div>
+                        <div class="text-base sm:text-lg text-gray-600 mb-2 sm:mb-3" id="idiomMeaning"></div>
+                        <div class="text-sm sm:text-base text-gray-500 italic flex items-center justify-center gap-2 sm:gap-3 flex-wrap" id="idiomExample"></div>
+                        
+                        <!-- 음성 인식 -->
+                        <div id="voiceControls" class="mt-4 sm:mt-6 p-4 sm:p-6 bg-gray-50 rounded-lg hidden">
+                            <div class="text-base sm:text-lg font-semibold text-gray-700 mb-3 sm:mb-4">발음 연습하기</div>
+                            <div class="bg-white p-3 sm:p-4 rounded-lg border border-gray-200">
+                                <div class="text-sm sm:text-base text-gray-700 font-medium mb-3 sm:mb-4 p-2 sm:p-3 bg-gray-100 rounded" id="voiceTarget">
+                                    목표 발음: 숙어를 선택하세요
+                                </div>
+                                <div class="flex justify-center gap-3 sm:gap-4 mb-3 sm:mb-4">
+                                    <button id="listenBtn"
+                                        class="w-12 h-12 sm:w-14 sm:h-14 bg-gray-600 text-white rounded-full hover:bg-gray-700 transition-colors flex items-center justify-center text-lg sm:text-xl">
+                                        🎤
+                                    </button>
+                                    <button id="playTargetBtn"
+                                        class="w-12 h-12 sm:w-14 sm:h-14 bg-gray-500 text-white rounded-full hover:bg-gray-600 transition-colors flex items-center justify-center text-lg sm:text-xl">
+                                        🔊
+                                    </button>
+                                </div>
+                                <div class="text-sm sm:text-base text-gray-600 p-2 sm:p-3 bg-gray-50 rounded mb-2 sm:mb-3" id="recognitionResult">
+                                    마이크 버튼을 눌러 발음을 시작하세요
+                                </div>
+                                <div id="voiceFeedback" class="p-2 sm:p-3 rounded text-sm sm:text-base"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 퀴즈 섹션 -->
+                    <div id="quizSection" class="hidden">
+                        <div id="quizLearningContent" class="bg-gray-50 p-4 sm:p-6 rounded-lg mb-4 border-l-4 border-gray-600">
+                            <h3 class="text-gray-700 font-semibold mb-2 sm:mb-3 text-sm sm:text-base">학습 내용 복습</h3>
+                            <div class="text-base sm:text-lg font-medium text-gray-800 mb-2" id="quizIdiomTitle"></div>
+                            <div class="text-sm sm:text-base text-gray-600 mb-2" id="quizIdiomMeaning"></div>
+                            <div class="text-sm sm:text-base text-gray-500 italic" id="quizIdiomExample"></div>
+                            <button id="showQuizBtn"
+                                class="mt-3 sm:mt-4 px-4 sm:px-6 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-800 transition-colors text-sm sm:text-base">
+                                퀴즈 풀어보기
+                            </button>
+                        </div>
+                        
+                        <div id="actualQuiz" class="hidden">
+                            <div class="p-3 sm:p-4 bg-gray-50 rounded-lg border-l-4 border-gray-600 mb-3 sm:mb-4 font-medium text-sm sm:text-base" id="quizQuestion"></div>
+                            <div class="space-y-2 sm:space-y-3" id="quizOptions"></div>
+                        </div>
+                    </div>
+
+                    <!-- 액션 버튼 -->
+                    <div class="flex flex-col sm:flex-row gap-2 sm:gap-3 justify-center mt-4 sm:mt-6">
+                        <button id="startBtn"
+                            class="px-4 sm:px-6 py-2 sm:py-3 bg-gray-700 text-white rounded-lg hover:bg-gray-800 transition-colors font-medium text-sm sm:text-base">
+                            발음 연습하기
+                        </button>
+                        <button id="nextBtn"
+                            class="px-4 sm:px-6 py-2 sm:py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors font-medium text-sm sm:text-base hidden">
+                            다음
+                        </button>
+                        <button id="teacherBtn"
+                            class="px-4 sm:px-6 py-2 sm:py-3 bg-gray-700 text-white rounded-lg hover:bg-gray-800 transition-colors font-medium text-sm sm:text-base hidden">
+                            강사 복습
+                        </button>
+                        <button id="retryBtn"
+                            class="px-4 sm:px-6 py-2 sm:py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm sm:text-base hidden">
+                            새 숙어
+                        </button>
+                    </div>
+                </section>
+
+                <!-- 강사 섹션 -->
+                <section id="teacherSection" class="bg-white rounded-xl shadow-sm p-4 sm:p-6 border border-gray-200 hidden">
+                    <div class="text-center">
+                        <div class="w-16 h-16 sm:w-20 sm:h-20 bg-gray-200 rounded-full mx-auto mb-3 sm:mb-4 flex items-center justify-center text-2xl sm:text-3xl" id="teacherAvatar">
+                            👨‍🏫
+                        </div>
+                        <div class="text-sm sm:text-base text-gray-700 leading-relaxed mb-4 sm:mb-6" id="teacherMessage"></div>
+                        <button id="finishBtn"
+                            class="px-4 sm:px-6 py-2 sm:py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors font-medium text-sm sm:text-base">
+                            학습 완료
+                        </button>
+                    </div>
+                </section>
+
+                <!-- 오류 메시지 -->
+                <div id="errorMessage" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded hidden">
+                    <strong>오류:</strong> <span id="errorText"></span>
+                </div>
+            </main>
+            
+            <!-- 광고 롤링 배너 -->
+            <section class="bg-white border-t border-gray-200 py-3">
+                <div class="container mx-auto px-4">
+                    <div class="text-xs text-gray-500 text-center mb-2">광고</div>
+                    <div id="adBannerContainer" class="overflow-hidden relative">
+                        <div id="adBannerTrack" class="flex transition-transform duration-500 ease-in-out">
+                            <!-- 광고 배너들이 여기에 동적으로 추가됩니다 -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- API 키 설정 모달 (개선된 버전) -->
+    <div id="apiKeyModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl p-6 sm:p-8 w-full max-w-md mx-auto">
+            <div class="text-xl sm:text-2xl font-bold text-gray-800 text-center mb-4">API 키 관리</div>
+            
+            <!-- 현재 상태 표시 -->
+            <div id="apiKeyStatus" class="mb-4 p-3 rounded-lg border">
+                <div class="text-sm font-medium text-gray-700 mb-1">현재 상태</div>
+                <div id="apiKeyStatusText" class="text-sm text-gray-600">API 키가 정상적으로 설정되어 있습니다.</div>
+            </div>
+            
+            <div class="text-sm text-gray-600 text-center mb-6">
+                Gemini API 사용을 위해 본인의 API 키를 입력해주세요.<br>
+                <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-blue-600 hover:underline">
+                    Google AI Studio에서 키 발급
+                </a>
+            </div>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">API 키</label>
+                    <div class="relative">
+                        <input type="password" id="apiKeyInput" placeholder="AIzaSy..." 
+                            class="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400">
+                        <button type="button" id="toggleApiKeyVisibility" 
+                            class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600">
+                            <span id="eyeIcon">👁️</span>
+                        </button>
+                    </div>
+                    <div class="text-xs text-gray-500 mt-1">키는 브라우저에만 저장되며 외부로 전송되지 않습니다</div>
+                </div>
+                
+                <!-- 키 관리 버튼들 -->
+                <div class="flex gap-2">
+                    <button id="saveApiKeyBtn" 
+                        class="flex-1 px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-800 transition-colors">
+                        저장
+                    </button>
+                    <button id="deleteApiKeyBtn"
+                        class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+                        삭제
+                    </button>
+                    <button id="testApiKeyBtn"
+                        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                        테스트
+
+                    </button>
+                </div>
+                
+                <!-- 하단 버튼들 -->
+                <div class="flex gap-3 pt-2 border-t">
+                    <button id="skipApiKeyBtn"
+                        class="flex-1 px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors">
+                        건너뛰기
+                    </button>
+                    <button id="closeApiKeyModalBtn"
+                        class="flex-1 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors">
+                        닫기
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 테스트 결과 -->
+            <div id="apiKeyTestResult" class="mt-4 p-3 rounded-lg hidden">
+                <div class="text-sm font-medium mb-1">테스트 결과</div>
+                <div id="apiKeyTestMessage" class="text-sm"></div>
+            </div>
+        </div>
+    </div>
+    <div id="alarmModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl p-6 sm:p-8 w-full max-w-md mx-auto">
+            <div class="text-4xl sm:text-5xl text-center mb-3 sm:mb-4">⏰</div>
+            <div class="text-xl sm:text-2xl font-bold text-gray-800 text-center mb-2 sm:mb-3">학습 시간입니다!</div>
+            <div class="text-sm sm:text-base text-gray-600 text-center mb-4 sm:mb-6">오늘의 영어 숙어를 배워볼까요?</div>
+            <div class="flex flex-col gap-2 sm:gap-3">
+                <button id="startAlarmLessonBtn"
+                    class="px-4 sm:px-6 py-2 sm:py-3 bg-gray-700 text-white rounded-lg hover:bg-gray-800 transition-colors font-medium text-sm sm:text-base">
+                    지금 학습하기
+                </button>
+                <button id="snoozeAlarmBtn"
+                    class="px-4 sm:px-6 py-2 sm:py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors text-sm sm:text-base">
+                    5분 후 알림
+                </button>
+                <button id="dismissAlarmBtn"
+                    class="px-4 sm:px-6 py-2 sm:py-3 bg-gray-400 text-white rounded-lg hover:bg-gray-500 transition-colors text-sm sm:text-base">
+                    나중에 하기
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tailwind CSS 경고 메시지 숨기기
+        (function() {
+            const originalConsoleWarn = console.warn;
+            console.warn = function(...args) {
+                if (args[0] && args[0].includes && args[0].includes('should not be used in production')) {
+                    return;
+                }
+                originalConsoleWarn.apply(console, args);
+            };
+        })();
+
+        // 전역 변수들
+        let appState = {
+            currentLevel: null,
+            currentIdiom: null,
+            currentStep: 0,
+            stats: JSON.parse(localStorage.getItem('idiomStats') || '{"streak": 0, "total": 0, "correct": 0, "attempts": 0}'),
+            alarmTimeout: null,
+            recognition: null
+        };
+
+        // API 기반 숙어 데이터베이스
+        const idiomDatabase = {
+            beginner: [
+                "break the ice", "piece of cake", "hit the books", "under the weather", 
+                "once in a blue moon", "cost an arm and a leg", "break a leg", "hang in there",
+                "it's raining cats and dogs", "when pigs fly", "don't cry over spilled milk", 
+                "the early bird catches the worm", "bite the bullet", "kill two birds with one stone",
+                "let the cat out of the bag"
+            ],
+            intermediate: [
+                "burn the midnight oil", "spill the beans", "the ball is in your court",
+                "cut to the chase", "hit the nail on the head", "jump on the bandwagon",
+                "steal someone's thunder", "throw in the towel", "the last straw",
+                "go the extra mile", "on cloud nine", "face the music", "cross that bridge when you come to it",
+                "don't put all your eggs in one basket", "every cloud has a silver lining"
+            ],
+            advanced: [
+                "beat around the bush", "the elephant in the room", "a blessing in disguise",
+                "call it a day", "the best of both worlds", "speak of the devil",
+                "see eye to eye", "hear it through the grapevine", "miss the boat",
+                "sit on the fence", "the whole nine yards", "under the same roof",
+                "actions speak louder than words", "better late than never", "don't judge a book by its cover"
+            ]
+        };
+
+        // 음성 합성 지원 확인
+        const speechSupported = 'speechSynthesis' in window;
+        const recognitionSupported = 'webkitSpeechRecognition' in window || 'SpeechRecognition' in window;
+
+        // 유틸리티 함수들
+        function getElement(id) {
+            return document.getElementById(id);
+        }
+
+        function querySelector(selector) {
+            return document.querySelector(selector);
+        }
+
+        function querySelectorAll(selector) {
+            return document.querySelectorAll(selector);
+        }
+
+        function showElement(element) {
+            if (typeof element === 'string') {
+                element = getElement(element);
+            }
+            if (element) {
+                element.classList.remove('hidden');
+            }
+        }
+
+        function hideElement(element) {
+            if (typeof element === 'string') {
+                element = getElement(element);
+            }
+            if (element) {
+                element.classList.add('hidden');
+            }
+        }
+
+        // 음성 인식 초기화
+        function initSpeechRecognition() {
+            if (recognitionSupported) {
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                appState.recognition = new SpeechRecognition();
+                appState.recognition.continuous = false;
+                appState.recognition.interimResults = false;
+                appState.recognition.lang = 'en-US';
+            }
+        }
+
+        // API에서 숙어 정보 가져오기 (Gemini API 사용)
+        async function fetchIdiomData(idiom) {
+            showElement('loadingIndicator');
+            
+            try {
+                // 먼저 Free Dictionary API로 기본 정보 시도
+                const dictionaryResponse = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(idiom)}`);
+                let meaning = '';
+                let example = '';
+                
+                if (dictionaryResponse.ok) {
+                    const data = await dictionaryResponse.json();
+                    if (data && data.length > 0) {
+                        const entry = data[0];
+                        meaning = entry.meanings?.[0]?.definitions?.[0]?.definition || '';
+                        example = entry.meanings?.[0]?.definitions?.[0]?.example || '';
+                    }
+                }
+                
+                // Gemini API로 퀴즈 생성 및 보완
+                const geminiData = await generateIdiomDataWithGemini(idiom, meaning, example);
+                
+                return {
+                    idiom: idiom,
+                    meaning: geminiData.meaning || meaning || '의미를 찾을 수 없습니다',
+                    example: geminiData.example || example || `"${idiom}"의 사용 예시를 찾을 수 없습니다`,
+                    quiz: geminiData.quiz
+                };
+                
+            } catch (error) {
+                console.error('API 오류:', error);
+                return getFallbackIdiomData(idiom);
+            } finally {
+                hideElement('loadingIndicator');
+            }
+        }
+
+        // 쿠키 기반 보안 API 키 관리 시스템
+        class SecureCookieApiKeyManager {
+            constructor() {
+                this.cookieName = 'gemini_api_key';
+                this.cookieOptions = {
+                    expires: 30, // 30일
+                    secure: window.location.protocol === 'https:', // HTTPS에서만 secure
+                    sameSite: 'strict', // CSRF 방지
+                    path: '/' // 전체 사이트에서 접근 가능
+                };
+                this.encryptionKey = this.generateDeviceKey();
+            }
+
+            // 디바이스별 고유 키 생성
+            generateDeviceKey() {
+                const deviceInfo = [
+                    navigator.userAgent,
+                    navigator.language,
+                    screen.width + 'x' + screen.height,
+                    new Date().getTimezoneOffset(),
+                    navigator.hardwareConcurrency || 'unknown'
+                ].join('|');
+                
+                return this.simpleHash(deviceInfo);
+            }
+
+            // 간단한 해시 함수
+            simpleHash(str) {
+                let hash = 0;
+                for (let i = 0; i < str.length; i++) {
+                    const char = str.charCodeAt(i);
+                    hash = ((hash << 5) - hash) + char;
+                    hash = hash & hash; // 32bit 정수로 변환
+                }
+                return Math.abs(hash).toString();
+            }
+
+            // 쿠키 관리 유틸리티 (js-cookie 패턴 참고, 수정된 버전)
+            setCookie(name, value, options = {}) {
+                const finalOptions = { ...this.cookieOptions, ...options };
+                
+                let cookieString = `${encodeURIComponent(name)}=${encodeURIComponent(value)}`;
+                
+                // 만료일 설정 (중요: 명시적 만료일이 없으면 세션 쿠키가 됨)
+                if (finalOptions.expires) {
+                    let expirationDate;
+                    
+                    if (typeof finalOptions.expires === 'number') {
+                        // 숫자인 경우 일수로 계산
+                        expirationDate = new Date();
+                        expirationDate.setTime(expirationDate.getTime() + finalOptions.expires * 24 * 60 * 60 * 1000);
+                    } else if (finalOptions.expires instanceof Date) {
+                        // Date 객체인 경우 그대로 사용
+                        expirationDate = finalOptions.expires;
+                    }
+                    
+                    if (expirationDate) {
+                        cookieString += `; expires=${expirationDate.toUTCString()}`;
+                        console.log(`쿠키 만료일 설정: ${expirationDate.toUTCString()}`);
+                    }
+                } else {
+                    // 만료일이 없으면 영구 쿠키로 설정 (매우 먼 미래 날짜)
+                    const farFuture = new Date();
+                    farFuture.setFullYear(farFuture.getFullYear() + 1); // 1년 후
+                    cookieString += `; expires=${farFuture.toUTCString()}`;
+                    console.log(`기본 만료일 설정: ${farFuture.toUTCString()}`);
+                }
+                
+                if (finalOptions.path) {
+                    cookieString += `; path=${finalOptions.path}`;
+                }
+                
+                if (finalOptions.domain) {
+                    cookieString += `; domain=${finalOptions.domain}`;
+                }
+                
+                if (finalOptions.secure) {
+                    cookieString += `; secure`;
+                }
+                
+                if (finalOptions.sameSite) {
+                    cookieString += `; samesite=${finalOptions.sameSite}`;
+                }
+                
+                // 실제 쿠키 설정
+                document.cookie = cookieString;
+                
+                // 설정 확인
+                console.log(`쿠키 설정: ${cookieString}`);
+                
+                // 설정 후 즉시 확인
+                setTimeout(() => {
+                    const savedValue = this.getCookie(name);
+                    console.log(`쿠키 저장 확인: ${name} = ${savedValue ? '저장됨' : '실패'}`);
+                }, 100);
+            }
+
+            getCookie(name) {
+                const encodedName = encodeURIComponent(name);
+                const cookies = document.cookie.split(';');
+                
+                for (let cookie of cookies) {
+                    let [cookieName, cookieValue] = cookie.trim().split('=');
+                    if (cookieName === encodedName) {
+                        return decodeURIComponent(cookieValue);
+                    }
+                }
+                return null;
+            }
+
+            removeCookie(name, options = {}) {
+                const finalOptions = { ...this.cookieOptions, ...options, expires: -1 };
+                this.setCookie(name, '', finalOptions);
+            }
+
+            // XOR 암호화/복호화 (디바이스별 키 사용)
+            encrypt(text) {
+                const keyBytes = this.stringToBytes(this.encryptionKey);
+                const textBytes = this.stringToBytes(text);
+                const encrypted = [];
+                
+                for (let i = 0; i < textBytes.length; i++) {
+                    encrypted.push(textBytes[i] ^ keyBytes[i % keyBytes.length]);
+                }
+                
+                return btoa(String.fromCharCode(...encrypted));
+            }
+
+            decrypt(encryptedText) {
+                try {
+                    const keyBytes = this.stringToBytes(this.encryptionKey);
+                    const encryptedBytes = [...atob(encryptedText)].map(char => char.charCodeAt(0));
+                    const decrypted = [];
+                    
+                    for (let i = 0; i < encryptedBytes.length; i++) {
+                        decrypted.push(encryptedBytes[i] ^ keyBytes[i % keyBytes.length]);
+                    }
+                    
+                    return String.fromCharCode(...decrypted);
+                } catch (error) {
+                    console.error('복호화 실패:', error);
+                    return null;
+                }
+            }
+
+            stringToBytes(str) {
+                return [...str].map(char => char.charCodeAt(0));
+            }
+
+            // API 키 설정
+            setApiKey(apiKey) {
+                if (!apiKey || !this.validateApiKey(apiKey)) {
+                    throw new Error('유효하지 않은 API 키입니다');
+                }
+
+                try {
+                    const encryptedKey = this.encrypt(apiKey);
+                    this.setCookie(this.cookieName, encryptedKey);
+                    
+                    // 설정 확인을 위한 해시도 저장
+                    const keyHash = this.simpleHash(apiKey);
+                    this.setCookie(this.cookieName + '_hash', keyHash);
+                    
+                    console.log('API 키가 안전하게 쿠키에 저장되었습니다');
+                    return true;
+                } catch (error) {
+                    console.error('API 키 저장 실패:', error);
+                    throw new Error('API 키 저장에 실패했습니다');
+                }
+            }
+
+            // API 키 가져오기
+            getApiKey() {
+                try {
+                    const encryptedKey = this.getCookie(this.cookieName);
+                    if (!encryptedKey) {
+                        return null;
+                    }
+                    
+                    const decryptedKey = this.decrypt(encryptedKey);
+                    
+                    // 무결성 검증
+                    if (decryptedKey && this.validateApiKey(decryptedKey)) {
+                        const expectedHash = this.simpleHash(decryptedKey);
+                        const storedHash = this.getCookie(this.cookieName + '_hash');
+                        
+                        if (expectedHash === storedHash) {
+                            return decryptedKey;
+                        } else {
+                            console.warn('API 키 무결성 검증 실패');
+                            this.clearApiKey();
+                            return null;
+                        }
+                    }
+                    
+                    return null;
+                } catch (error) {
+                    console.error('API 키 복호화 실패:', error);
+                    this.clearApiKey(); // 손상된 데이터 정리
+                    return null;
+                }
+            }
+
+            // API 키 존재 여부 확인
+            hasApiKey() {
+                const encryptedKey = this.getCookie(this.cookieName);
+                const hash = this.getCookie(this.cookieName + '_hash');
+                return !!(encryptedKey && hash);
+            }
+
+            // API 키 삭제
+            clearApiKey() {
+                this.removeCookie(this.cookieName);
+                this.removeCookie(this.cookieName + '_hash');
+                console.log('API 키가 쿠키에서 삭제되었습니다');
+            }
+
+            // API 키 유효성 검사
+            validateApiKey(apiKey) {
+                return apiKey && 
+                       typeof apiKey === 'string' && 
+                       apiKey.startsWith('AIzaSy') && 
+                       apiKey.length >= 35;
+            }
+
+            // 쿠키 만료일 갱신
+            refreshExpiry() {
+                const currentKey = this.getApiKey();
+                if (currentKey) {
+                    this.setApiKey(currentKey); // 만료일이 갱신됨
+                    console.log('쿠키 만료일이 갱신되었습니다');
+                }
+            }
+
+            // 디바이스 정보 확인
+            getDeviceInfo() {
+                return {
+                    userAgent: navigator.userAgent,
+                    language: navigator.language,
+                    screen: screen.width + 'x' + screen.height,
+                    timezone: new Date().getTimezoneOffset(),
+                    cores: navigator.hardwareConcurrency || 'unknown',
+                    deviceKey: this.encryptionKey
+                };
+            }
+
+            // 보안 상태 점검
+            getSecurityStatus() {
+                return {
+                    hasApiKey: this.hasApiKey(),
+                    isSecure: window.location.protocol === 'https:',
+                    cookieSupported: navigator.cookieEnabled,
+                    sameSiteSupported: 'sameSite' in Document.prototype,
+                    deviceKeyGenerated: !!this.encryptionKey,
+                    encryptionMethod: 'XOR with device-specific key'
+                };
+            }
+
+            // 모든 관련 쿠키 목록
+            getAllRelatedCookies() {
+                const cookies = document.cookie.split(';');
+                const related = [];
+                
+                for (let cookie of cookies) {
+                    const [name] = cookie.trim().split('=');
+                    const decodedName = decodeURIComponent(name);
+                    if (decodedName.includes('gemini') || decodedName.includes('api_key')) {
+                        related.push(decodedName);
+                    }
+                }
+                
+                return related;
+            }
+
+            // 보안 정리 (개발용)
+            securityCleanup() {
+                const relatedCookies = this.getAllRelatedCookies();
+                relatedCookies.forEach(cookieName => {
+                    this.removeCookie(cookieName);
+                });
+                console.log('모든 관련 쿠키가 정리되었습니다:', relatedCookies);
+            }
+        }
+
+        // 쿠키 기반 API 키 관리자 인스턴스
+        const apiKeyManager = new SecureCookieApiKeyManager();
+
+        // Gemini API를 사용한 숙어 데이터 생성 (보안 강화)
+        async function generateIdiomDataWithGemini(idiom, existingMeaning = '', existingExample = '') {
+            const apiKey = apiKeyManager.getApiKey();
+            
+            if (!apiKey) {
+                throw new Error('API 키가 설정되지 않았습니다');
+            }
+
+            const prompt = `
+            영어 숙어 "${idiom}"에 대한 정보를 생성해주세요.
+            
+            ${existingMeaning ? `기존 의미: ${existingMeaning}` : ''}
+            ${existingExample ? `기존 예문: ${existingExample}` : ''}
+            
+            다음 형식의 JSON으로 응답해주세요:
+            {
+                "meaning": "한국어 의미 (간단명료하게)",
+                "example": "영어 예문 (실용적이고 자연스럽게)",
+                "quiz": {
+                    "question": "다음 중 '${idiom}'의 의미는?",
+                    "options": ["정답", "오답1", "오답2", "오답3"],
+                    "correct": 0
+                }
+            }
+            
+            퀴즈의 오답은 그럴듯하지만 틀린 선택지로 만들어주세요.
+            `;
+
+            try {
+                const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-goog-api-key': apiKey
+                    },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{
+                                text: prompt
+                            }]
+                        }]
+                    })
+                });
+
+                if (!response.ok) {
+                    if (response.status === 400) {
+                        throw new Error('API 키가 유효하지 않습니다. 새로운 키를 입력해주세요.');
+                    }
+                    throw new Error(`Gemini API 오류: ${response.status}`);
+                }
+
+                const data = await response.json();
+                const generatedText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                
+                if (generatedText) {
+                    try {
+                        const cleanedText = generatedText.replace(/```json\n?|\n?```/g, '').trim();
+                        const parsedData = JSON.parse(cleanedText);
+                        
+                        if (parsedData.meaning && parsedData.example && parsedData.quiz) {
+                            return parsedData;
+                        }
+                    } catch (parseError) {
+                        console.error('JSON 파싱 오류:', parseError);
+                        return extractDataFromText(generatedText, idiom);
+                    }
+                }
+                
+                throw new Error('Gemini API 응답이 올바르지 않습니다');
+                
+            } catch (error) {
+                console.error('Gemini API 오류:', error);
+                
+                if (error.message.includes('API 키')) {
+                    // API 키 오류 시 키 재설정 요청
+                    apiKeyManager.clearApiKey();
+                    showApiKeyModal();
+                    throw error;
+                }
+                
+                return generateFallbackQuiz(idiom, existingMeaning, existingExample);
+            }
+        }
+
+        // API 키 모달 관련 함수들 (개선된 버전)
+        function showApiKeyModal() {
+            const modal = getElement('apiKeyModal');
+            if (modal) {
+                // 현재 상태 업데이트
+                updateApiKeyStatus();
+                
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                
+                // 입력 필드에 포커스
+                const input = getElement('apiKeyInput');
+                if (input) {
+                    setTimeout(() => input.focus(), 100);
+                }
+            }
+        }
+
+        function hideApiKeyModal() {
+            const modal = getElement('apiKeyModal');
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+                
+                // 입력 필드 초기화
+                const input = getElement('apiKeyInput');
+                if (input) {
+                    input.value = '';
+                    input.type = 'password';
+                }
+                
+                // 테스트 결과 숨기기
+                hideApiKeyTestResult();
+            }
+        }
+
+        // API 키 상태 관리 시스템 (Context7 반응형 패턴 적용)
+        class ApiKeyStateManager extends EventTarget {
+            constructor() {
+                super();
+                this._hasApiKey = false;
+                this.updateState();
+            }
+
+            // 현재 상태 확인 및 업데이트
+            updateState() {
+                const previousState = this._hasApiKey;
+                this._hasApiKey = apiKeyManager.hasApiKey();
+                
+                if (previousState !== this._hasApiKey) {
+                    console.log(`API 키 상태 변경: ${previousState} -> ${this._hasApiKey}`);
+                    this.dispatchEvent(new CustomEvent('apikey-state-changed', {
+                        detail: { hasApiKey: this._hasApiKey }
+                    }));
+                }
+            }
+
+            get hasApiKey() {
+                return this._hasApiKey;
+            }
+
+            // 상태 변경 감지용 폴링 시작
+            startPolling() {
+                setInterval(() => {
+                    this.updateState();
+                }, 1000); // 1초마다 확인
+            }
+        }
+
+        // 전역 상태 관리자
+        const apiKeyState = new ApiKeyStateManager();
+
+        // API 키 모달 관련 함수들 (개선된 상태 반영 버전)
+        function showApiKeyModal() {
+            const modal = getElement('apiKeyModal');
+            if (modal) {
+                // 상태 즉시 업데이트
+                apiKeyState.updateState();
+                updateApiKeyStatus();
+                
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                
+                // 입력 필드에 포커스
+                const input = getElement('apiKeyInput');
+                if (input) {
+                    setTimeout(() => input.focus(), 100);
+                }
+                
+                console.log('API 키 모달 열림 - 현재 상태:', apiKeyState.hasApiKey);
+            }
+        }
+
+        function updateApiKeyStatus() {
+            const statusContainer = getElement('apiKeyStatus');
+            const statusText = getElement('apiKeyStatusText');
+            const deleteBtn = getElement('deleteApiKeyBtn');
+            
+            if (!statusContainer || !statusText || !deleteBtn) return;
+
+            // 실시간 상태 확인
+            const hasKey = apiKeyManager.hasApiKey();
+            const actualKey = apiKeyManager.getApiKey();
+            const securityStatus = apiKeyManager.getSecurityStatus();
+            
+            console.log('상태 업데이트:', { hasKey, hasActualKey: !!actualKey });
+            
+            if (hasKey && actualKey) {
+                statusContainer.className = 'mb-4 p-3 rounded-lg border border-green-200 bg-green-50';
+                statusText.className = 'text-sm text-green-700';
+                statusText.innerHTML = `
+                    <div class="font-medium flex items-center gap-2">
+                        <span class="text-green-600">✓</span>
+                        API 키가 쿠키에 저장되어 있습니다
+                    </div>
+                    <div class="text-xs mt-1 space-y-1">
+                        <div>• 보안: ${securityStatus.isSecure ? 'HTTPS 연결' : 'HTTP 연결 (비보안)'}</div>
+                        <div>• 저장소: 암호화된 쿠키 (디바이스별)</div>
+                        <div>• 만료: 30일 후 자동 삭제</div>
+                        <div>• 고급 퀴즈: <span class="font-medium text-green-600">사용 가능</span></div>
+                    </div>
+                `;
+                deleteBtn.disabled = false;
+                deleteBtn.className = 'px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors';
+            } else {
+                statusContainer.className = 'mb-4 p-3 rounded-lg border border-gray-200 bg-gray-50';
+                statusText.className = 'text-sm text-gray-600';
+                statusText.innerHTML = `
+                    <div class="font-medium flex items-center gap-2">
+                        <span class="text-gray-400">○</span>
+                        API 키가 설정되지 않았습니다
+                    </div>
+                    <div class="text-xs mt-1 space-y-1">
+                        <div>• 쿠키 지원: ${securityStatus.cookieSupported ? '지원됨' : '지원안됨'}</div>
+                        <div>• 보안 모드: ${securityStatus.isSecure ? 'HTTPS' : 'HTTP'}</div>
+                        <div>• 고급 퀴즈: <span class="font-medium text-gray-500">사용 불가</span></div>
+                    </div>
+                `;
+                deleteBtn.disabled = true;
+                deleteBtn.className = 'px-4 py-2 bg-gray-300 text-gray-500 rounded-lg cursor-not-allowed';
+            }
+        }
+
+        function saveApiKey() {
+            const input = getElement('apiKeyInput');
+            const apiKey = input ? input.value.trim() : '';
+            
+            if (!apiKey) {
+                showApiKeyTestResult('오류', 'API 키를 입력해주세요.', 'error');
+                return;
+            }
+
+            try {
+                if (apiKeyManager.setApiKey(apiKey)) {
+                    showApiKeyTestResult('성공', '쿠키에 안전하게 저장되었습니다. (30일 유효)', 'success');
+                    
+                    // 상태 즉시 업데이트
+                    setTimeout(() => {
+                        apiKeyState.updateState();
+                        updateApiKeyStatus();
+                    }, 500);
+                    
+                    // 입력 필드 클리어
+                    if (input) {
+                        input.value = '';
+                    }
+                    
+                    console.log('API 키 저장 완료 및 상태 업데이트');
+                }
+            } catch (error) {
+                showApiKeyTestResult('오류', error.message, 'error');
+            }
+        }
+
+        function deleteApiKey() {
+            const confirmMessage = `정말로 API 키를 삭제하시겠습니까?
+
+삭제 후 변경사항:
+• 쿠키에서 완전히 제거됩니다
+• 고급 퀴즈 기능을 사용할 수 없습니다
+• 기본 퀴즈만 사용 가능합니다
+
+이 작업은 되돌릴 수 없습니다.`;
+
+            if (confirm(confirmMessage)) {
+                apiKeyManager.clearApiKey();
+                showApiKeyTestResult('완료', '쿠키에서 API 키가 삭제되었습니다.', 'info');
+                
+                // 상태 즉시 업데이트
+                setTimeout(() => {
+                    apiKeyState.updateState();
+                    updateApiKeyStatus();
+                }, 500);
+                
+                // 입력 필드 클리어
+                const input = getElement('apiKeyInput');
+                if (input) {
+                    input.value = '';
+                }
+                
+                console.log('API 키 삭제 완료 및 상태 업데이트');
+            }
+        }
+
+        // 쿠키 관리 편의 함수들 (개발자 콘솔용, 개선된 버전)
+        function getCookieInfo() {
+            const info = {
+                hasApiKey: apiKeyManager.hasApiKey(),
+                deviceInfo: apiKeyManager.getDeviceInfo(),
+                securityStatus: apiKeyManager.getSecurityStatus(),
+                relatedCookies: apiKeyManager.getAllRelatedCookies(),
+                cookieExpiry: '30일',
+                allCookies: document.cookie.split(';').map(c => c.trim()),
+                cookieEnabled: navigator.cookieEnabled
+            };
+            
+            console.log('=== 쿠키 상태 정보 ===');
+            console.log('API 키 존재:', info.hasApiKey);
+            console.log('쿠키 지원:', info.cookieEnabled);
+            console.log('보안 상태:', info.securityStatus);
+            console.log('모든 쿠키:', info.allCookies);
+            
+            return info;
+        }
+
+        function debugCookieStorage() {
+            console.log('=== 쿠키 저장 디버깅 ===');
+            
+            // 테스트 쿠키 생성
+            const testValue = 'test_' + Date.now();
+            apiKeyManager.setCookie('debug_test', testValue, { expires: 1 });
+            
+            // 즉시 읽기 테스트
+            const readValue = apiKeyManager.getCookie('debug_test');
+            console.log('테스트 쿠키 저장/읽기:', readValue === testValue ? '성공' : '실패');
+            
+            // 브라우저 재시작 시뮬레이션을 위한 정보
+            console.log('브라우저 재시작 후 확인하려면:');
+            console.log('1. 브라우저를 완전히 종료');
+            console.log('2. 다시 열어서 개발자 콘솔에서 getCookieInfo() 실행');
+            
+            // 현재 쿠키 상태 표시
+            console.log('현재 모든 쿠키:', document.cookie);
+            
+            // 테스트 쿠키 정리
+            setTimeout(() => {
+                apiKeyManager.removeCookie('debug_test');
+                console.log('테스트 쿠키 정리 완료');
+            }, 5000);
+        }
+
+        function refreshCookieExpiry() {
+            const currentKey = apiKeyManager.getApiKey();
+            if (currentKey) {
+                apiKeyManager.setApiKey(currentKey); // 만료일이 갱신됨
+                console.log('쿠키 만료일이 30일로 갱신되었습니다');
+                
+                // 갱신 확인
+                setTimeout(() => {
+                    const stillExists = apiKeyManager.hasApiKey();
+                    console.log('만료일 갱신 확인:', stillExists ? '성공' : '실패');
+                }, 1000);
+            } else {
+                console.log('갱신할 API 키가 없습니다');
+            }
+        }
+
+        function clearAllApiCookies() {
+            if (confirm('개발용: 모든 API 관련 쿠키를 삭제하시겠습니까?')) {
+                const beforeCount = apiKeyManager.getAllRelatedCookies().length;
+                apiKeyManager.securityCleanup();
+                
+                setTimeout(() => {
+                    const afterCount = apiKeyManager.getAllRelatedCookies().length;
+                    console.log(`쿠키 정리 완료: ${beforeCount}개 -> ${afterCount}개`);
+                }, 1000);
+            }
+        }
+
+        // 쿠키 문제 해결 가이드
+        function cookieTroubleshooting() {
+            console.log('=== 쿠키 문제 해결 가이드 ===');
+            
+            const issues = [];
+            
+            // 쿠키 지원 확인
+            if (!navigator.cookieEnabled) {
+                issues.push('❌ 브라우저에서 쿠키가 비활성화되어 있습니다');
+            } else {
+                console.log('✅ 쿠키 지원: 활성화됨');
+            }
+            
+            // HTTPS 확인
+            if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
+                issues.push('⚠️ HTTPS가 아닌 환경입니다. 보안 쿠키가 제한될 수 있습니다');
+            } else {
+                console.log('✅ 보안 연결: 정상');
+            }
+            
+            // 프라이빗 모드 감지 시도
+            try {
+                localStorage.setItem('test', 'test');
+                localStorage.removeItem('test');
+                console.log('✅ 스토리지 접근: 정상');
+            } catch (e) {
+                issues.push('⚠️ 프라이빗 브라우징 모드일 수 있습니다');
+            }
+            
+            // 쿠키 크기 확인
+            const allCookies = document.cookie;
+            if (allCookies.length > 4000) {
+                issues.push('⚠️ 쿠키 크기가 큽니다. 일부 브라우저에서 제한될 수 있습니다');
+            }
+            
+            if (issues.length === 0) {
+                console.log('✅ 쿠키 환경: 정상');
+                console.log('브라우저 재시작 후에도 쿠키가 유지되어야 합니다');
+            } else {
+                console.log('발견된 문제점들:');
+                issues.forEach(issue => console.log(issue));
+            }
+            
+            return {
+                cookieEnabled: navigator.cookieEnabled,
+                isSecure: window.location.protocol === 'https:',
+                cookieSize: allCookies.length,
+                issues: issues
+            };
+        }
+
+        async function testApiKey() {
+            const input = getElement('apiKeyInput');
+            const apiKey = input ? input.value.trim() : '';
+            
+            if (!apiKey) {
+                showApiKeyTestResult('오류', '테스트할 API 키를 입력해주세요.', 'error');
+                return;
+            }
+
+            showApiKeyTestResult('테스트 중', 'API 키를 확인하고 있습니다...', 'loading');
+
+            try {
+                // 간단한 테스트 요청
+                const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-goog-api-key': apiKey
+                    },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{
+                                text: 'Hello'
+                            }]
+                        }]
+                    })
+                });
+
+                if (response.ok) {
+                    showApiKeyTestResult('성공', 'API 키가 유효합니다! 정상적으로 작동합니다.', 'success');
+                } else if (response.status === 400) {
+                    showApiKeyTestResult('오류', 'API 키가 유효하지 않습니다. 올바른 키를 입력해주세요.', 'error');
+                } else if (response.status === 429) {
+                    showApiKeyTestResult('경고', 'API 사용량 한도에 도달했습니다. 나중에 다시 시도해주세요.', 'warning');
+                } else {
+                    showApiKeyTestResult('오류', `API 오류 (${response.status}): 서버에 문제가 있습니다.`, 'error');
+                }
+            } catch (error) {
+                showApiKeyTestResult('오류', '네트워크 오류가 발생했습니다. 인터넷 연결을 확인해주세요.', 'error');
+            }
+        }
+
+        function showApiKeyTestResult(title, message, type) {
+            const resultContainer = getElement('apiKeyTestResult');
+            const messageElement = getElement('apiKeyTestMessage');
+            
+            if (!resultContainer || !messageElement) return;
+
+            const typeStyles = {
+                success: 'border-green-200 bg-green-50 text-green-800',
+                error: 'border-red-200 bg-red-50 text-red-800',
+                warning: 'border-yellow-200 bg-yellow-50 text-yellow-800',
+                info: 'border-blue-200 bg-blue-50 text-blue-800',
+                loading: 'border-gray-200 bg-gray-50 text-gray-800'
+            };
+
+            resultContainer.className = `mt-4 p-3 rounded-lg border ${typeStyles[type] || typeStyles.info}`;
+            messageElement.innerHTML = `<strong>${title}:</strong> ${message}`;
+            resultContainer.classList.remove('hidden');
+
+            // 5초 후 자동 숨김 (로딩 상태가 아닌 경우)
+            if (type !== 'loading') {
+                setTimeout(() => {
+                    hideApiKeyTestResult();
+                }, 5000);
+            }
+        }
+
+        function hideApiKeyTestResult() {
+            const resultContainer = getElement('apiKeyTestResult');
+            if (resultContainer) {
+                resultContainer.classList.add('hidden');
+            }
+        }
+
+        function toggleApiKeyVisibility() {
+            const input = getElement('apiKeyInput');
+            const eyeIcon = getElement('eyeIcon');
+            
+            if (!input || !eyeIcon) return;
+
+            if (input.type === 'password') {
+                input.type = 'text';
+                eyeIcon.textContent = '🙈';
+            } else {
+                input.type = 'password';
+                eyeIcon.textContent = '👁️';
+            }
+        }
+
+        function skipApiKey() {
+            hideApiKeyModal();
+            showError('API 키 없이는 고급 퀴즈 기능을 사용할 수 없습니다. 기본 퀴즈로 진행됩니다.');
+        }
+
+        // API 키 관리 설정 열기 (메뉴에서 호출 가능)
+        function openApiKeySettings() {
+            showApiKeyModal();
+        }
+
+        // 앱 시작 시 API 키 확인
+        function checkApiKeyOnStartup() {
+            if (!apiKeyManager.hasApiKey()) {
+                // 첫 방문이거나 세션이 만료된 경우
+                setTimeout(() => {
+                    showApiKeyModal();
+                }, 1000); // 1초 후 모달 표시
+            }
+        }
+
+        // 광고 롤링 배너 시스템 (수정된 버전)
+        class AdBannerManager {
+            constructor() {
+                this.ads = [];
+                this.currentIndex = 0;
+                this.intervalId = null;
+                this.container = null;
+                this.track = null;
+                this.isPlaying = false;
+                this.animationDuration = 500;
+                this.displayDuration = 3000;
+                this.isInitialized = false;
+                
+                // 기본 광고 데이터
+                this.defaultAds = [
+                    {
+                        id: 1,
+                        title: "온라인 영어 과외",
+                        description: "원어민과 1:1 영어 회화 수업",
+                        link: "#",
+                        bgColor: "bg-blue-50",
+                        textColor: "text-blue-800",
+                        buttonColor: "bg-blue-600 hover:bg-blue-700"
+                    },
+                    {
+                        id: 2,
+                        title: "영어 학습 앱",
+                        description: "AI 기반 맞춤형 영어 학습",
+                        link: "#",
+                        bgColor: "bg-green-50",
+                        textColor: "text-green-800",
+                        buttonColor: "bg-green-600 hover:bg-green-700"
+                    },
+                    {
+                        id: 3,
+                        title: "토익 강의",
+                        description: "단기간 점수 향상 보장",
+                        link: "#",
+                        bgColor: "bg-purple-50",
+                        textColor: "text-purple-800",
+                        buttonColor: "bg-purple-600 hover:bg-purple-700"
+                    },
+                    {
+                        id: 4,
+                        title: "영문법 교재",
+                        description: "쉽고 재미있는 영문법 학습",
+                        link: "#",
+                        bgColor: "bg-orange-50",
+                        textColor: "text-orange-800",
+                        buttonColor: "bg-orange-600 hover:bg-orange-700"
+                    },
+                    {
+                        id: 5,
+                        title: "해외 어학연수",
+                        description: "저렴한 비용으로 현지 경험",
+                        link: "#",
+                        bgColor: "bg-indigo-50",
+                        textColor: "text-indigo-800",
+                        buttonColor: "bg-indigo-600 hover:bg-indigo-700"
+                    }
+                ];
+            }
+
+            init() {
+                console.log('광고 배너 초기화 시작...');
+
+                // DOM 요소 찾기
+                this.container = document.getElementById('adBannerContainer');
+                this.track = document.getElementById('adBannerTrack');
+
+                console.log('Container found:', !!this.container);
+                console.log('Track found:', !!this.track);
+
+                if (!this.container || !this.track) {
+                    console.error('광고 배너 DOM 요소를 찾을 수 없습니다');
+                    console.log('Container element:', this.container);
+                    console.log('Track element:', this.track);
+                    return false;
+                }
+
+                // 기본 광고 로드
+                this.ads = [...this.defaultAds];
+                console.log('기본 광고 개수:', this.ads.length);
+
+                this.render();
+                this.start();
+                this.setupHoverControls();
+
+                this.isInitialized = true;
+                console.log('광고 배너 초기화 완료!');
+
+                // 배너가 보이는지 확인
+                this.debugVisibility();
+                return true;
+            }
+
+            // 가시성 디버깅
+            debugVisibility() {
+                console.log('=== 광고 배너 가시성 디버그 ===');
+                console.log('Container styles:', window.getComputedStyle(this.container));
+                console.log('Container display:', window.getComputedStyle(this.container).display);
+                console.log('Container height:', window.getComputedStyle(this.container).height);
+                console.log('Track styles:', window.getComputedStyle(this.track));
+                console.log('Track children count:', this.track.children.length);
+                
+                // 각 광고 요소 확인
+                Array.from(this.track.children).forEach((child, index) => {
+                    console.log(`Ad ${index} display:`, window.getComputedStyle(child).display);
+                    console.log(`Ad ${index} content:`, child.innerHTML);
+                });
+            }
+
+            render() {
+                if (!this.track) {
+                    console.error('Track 요소가 없어서 렌더링할 수 없습니다');
+                    return;
+                }
+
+                console.log('광고 렌더링 시작... 광고 개수:', this.ads.length);
+                
+                // 트랙 초기화
+                this.track.innerHTML = '';
+                
+                if (this.ads.length === 0) {
+                    console.warn('렌더링할 광고가 없습니다');
+                    return;
+                }
+                
+                this.ads.forEach((ad, index) => {
+                    const adElement = this.createAdElement(ad, index);
+                    this.track.appendChild(adElement);
+                    console.log(`광고 ${index + 1} 렌더링 완료:`, ad.title);
+                });
+
+                this.updatePosition();
+                console.log('모든 광고 렌더링 완료');
+            }
+
+            createAdElement(ad, index) {
+                const adDiv = document.createElement('div');
+                adDiv.className = `ad-item px-2`;
+
+                // 안전한 HTML 생성
+                const title = this.escapeHtml(ad.title);
+                const description = this.escapeHtml(ad.description);
+                const link = this.escapeHtml(ad.link);
+
+                adDiv.innerHTML = `
+                    <div class="${ad.bgColor} ${ad.textColor} rounded-lg p-3 border border-gray-200 cursor-pointer transition-transform hover:scale-[1.02] w-full"
+                         onclick="window.open('${link}', '_blank')"
+                         style="min-height: 60px; height: 100%;">
+                        <div class="flex items-center justify-between h-full">
+                            <div class="flex-1 min-w-0">
+                                <div class="text-sm font-semibold truncate">${title}</div>
+                                <div class="text-xs opacity-80 truncate">${description}</div>
+                            </div>
+                            <button class="${ad.buttonColor} text-white text-xs px-3 py-1 rounded-full transition-colors ml-3 flex-shrink-0"
+                                    onclick="event.stopPropagation(); window.open('${link}', '_blank')">
+                                보기
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                console.log(`광고 요소 생성 완료: ${title}`);
+                return adDiv;
+            }
+
+            escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            updatePosition() {
+                if (!this.track || this.ads.length === 0) return;
+                
+                const translateX = -this.currentIndex * 100;
+                this.track.style.transform = `translateX(${translateX}%)`;
+                console.log(`위치 업데이트: ${this.currentIndex}번째 광고로 이동`);
+            }
+
+            next() {
+                if (this.ads.length <= 1) return;
+                
+                this.currentIndex = (this.currentIndex + 1) % this.ads.length;
+                this.updatePosition();
+                console.log(`다음 광고: ${this.currentIndex + 1}/${this.ads.length}`);
+            }
+
+            prev() {
+                if (this.ads.length <= 1) return;
+                
+                this.currentIndex = this.currentIndex === 0 ? this.ads.length - 1 : this.currentIndex - 1;
+                this.updatePosition();
+                console.log(`이전 광고: ${this.currentIndex + 1}/${this.ads.length}`);
+            }
+
+            start() {
+                if (this.isPlaying || this.ads.length <= 1) return;
+                
+                this.isPlaying = true;
+                this.intervalId = setInterval(() => {
+                    this.next();
+                }, this.displayDuration);
+                
+                console.log('자동 롤링 시작');
+            }
+
+            stop() {
+                if (!this.isPlaying) return;
+                
+                this.isPlaying = false;
+                if (this.intervalId) {
+                    clearInterval(this.intervalId);
+                    this.intervalId = null;
+                }
+                
+                console.log('자동 롤링 정지');
+            }
+
+            setupHoverControls() {
+                if (!this.container) return;
+
+                this.container.addEventListener('mouseenter', () => {
+                    console.log('마우스 호버: 롤링 정지');
+                    this.stop();
+                });
+
+                this.container.addEventListener('mouseleave', () => {
+                    console.log('마우스 아웃: 롤링 재시작');
+                    this.start();
+                });
+            }
+
+            addAd(ad) {
+                if (!ad || !ad.title || !ad.description) {
+                    console.error('유효하지 않은 광고 데이터:', ad);
+                    return false;
+                }
+
+                const newAd = {
+                    id: Date.now(),
+                    title: ad.title,
+                    description: ad.description,
+                    link: ad.link || '#',
+                    bgColor: ad.bgColor || 'bg-gray-50',
+                    textColor: ad.textColor || 'text-gray-800',
+                    buttonColor: ad.buttonColor || 'bg-gray-600 hover:bg-gray-700'
+                };
+
+                this.ads.push(newAd);
+                console.log('새 광고 추가:', newAd.title);
+                
+                if (this.isInitialized) {
+                    this.render();
+                    
+                    if (this.ads.length > 1 && !this.isPlaying) {
+                        this.start();
+                    }
+                }
+
+                return true;
+            }
+
+            removeAd(adId) {
+                const initialLength = this.ads.length;
+                this.ads = this.ads.filter(ad => ad.id !== adId);
+                
+                if (this.ads.length !== initialLength) {
+                    console.log('광고 제거됨. 남은 광고 수:', this.ads.length);
+                    
+                    if (this.currentIndex >= this.ads.length) {
+                        this.currentIndex = 0;
+                    }
+                    
+                    if (this.isInitialized) {
+                        this.render();
+                        
+                        if (this.ads.length <= 1) {
+                            this.stop();
+                        }
+                    }
+                    
+                    return true;
+                }
+                
+                return false;
+            }
+
+            getAds() {
+                return [...this.ads];
+            }
+
+            getAdCount() {
+                return this.ads.length;
+            }
+
+            getCurrentIndex() {
+                return this.currentIndex;
+            }
+
+            getStatus() {
+                return {
+                    isInitialized: this.isInitialized,
+                    isPlaying: this.isPlaying,
+                    currentIndex: this.currentIndex,
+                    totalAds: this.ads.length,
+                    displayDuration: this.displayDuration,
+                    animationDuration: this.animationDuration,
+                    containerFound: !!this.container,
+                    trackFound: !!this.track
+                };
+            }
+        }
+
+        // 전역 광고 배너 관리자 인스턴스
+        let adBannerManager = null;
+
+        // 광고 배너 관리 함수들 (외부에서 사용 가능)
+        function addAdvertisement(ad) {
+            if (adBannerManager) {
+                return adBannerManager.addAd(ad);
+            }
+            return false;
+        }
+
+        function removeAdvertisement(adId) {
+            if (adBannerManager) {
+                return adBannerManager.removeAd(adId);
+            }
+            return false;
+        }
+
+        function getAdvertisements() {
+            if (adBannerManager) {
+                return adBannerManager.getAds();
+            }
+            return [];
+        }
+
+        function getBannerStatus() {
+            if (adBannerManager) {
+                return adBannerManager.getStatus();
+            }
+            return null;
+        }
+
+        // 광고 배너 예제 추가 함수 (테스트용)
+        function addSampleAd() {
+            const sampleAds = [
+                {
+                    title: "스피킹 클럽",
+                    description: "실전 영어 회화 연습",
+                    link: "https://example.com/speaking",
+                    bgColor: "bg-red-50",
+                    textColor: "text-red-800",
+                    buttonColor: "bg-red-600 hover:bg-red-700"
+                },
+                {
+                    title: "영어 도서관",
+                    description: "무료 영어 원서 읽기",
+                    link: "https://example.com/library",
+                    bgColor: "bg-teal-50",
+                    textColor: "text-teal-800",
+                    buttonColor: "bg-teal-600 hover:bg-teal-700"
+                },
+                {
+                    title: "발음 교정",
+                    description: "AI 발음 분석 서비스",
+                    link: "https://example.com/pronunciation",
+                    bgColor: "bg-pink-50",
+                    textColor: "text-pink-800",
+                    buttonColor: "bg-pink-600 hover:bg-pink-700"
+                }
+            ];
+            
+            const randomAd = sampleAds[Math.floor(Math.random() * sampleAds.length)];
+            return addAdvertisement(randomAd);
+        }
+
+        // 텍스트에서 데이터 추출
+        function extractDataFromText(text, idiom) {
+            // 간단한 패턴 매칭으로 정보 추출 시도
+            const meaningMatch = text.match(/"meaning":\s*"([^"]+)"/);
+            const exampleMatch = text.match(/"example":\s*"([^"]+)"/);
+            
+            return {
+                meaning: meaningMatch ? meaningMatch[1] : `${idiom}의 의미`,
+                example: exampleMatch ? exampleMatch[1] : `"${idiom}" 예문입니다.`,
+                quiz: generateSimpleQuiz(idiom, meaningMatch ? meaningMatch[1] : `${idiom}의 의미`)
+            };
+        }
+
+        // 백업 퀴즈 생성
+        function generateFallbackQuiz(idiom, meaning, example) {
+            return {
+                meaning: meaning || `${idiom}의 의미를 찾을 수 없습니다`,
+                example: example || `"${idiom}" 사용 예시입니다.`,
+                quiz: generateSimpleQuiz(idiom, meaning || `${idiom}의 의미`)
+            };
+        }
+
+        // 간단한 퀴즈 생성
+        function generateSimpleQuiz(idiom, meaning) {
+            const commonWrongAnswers = [
+                "직역적인 의미",
+                "반대되는 개념",
+                "비슷하지만 다른 뜻",
+                "관련 없는 의미"
+            ];
+            
+            const options = [meaning, ...commonWrongAnswers.slice(0, 3)];
+            const shuffled = options.sort(() => Math.random() - 0.5);
+            const correctIndex = shuffled.indexOf(meaning);
+
+            return {
+                question: `다음 중 '${idiom}'의 의미는?`,
+                options: shuffled,
+                correct: correctIndex
+            };
+        }
+
+        // 백업 숙어 데이터
+        function getFallbackIdiomData(idiom) {
+            const fallbackData = {
+                "break the ice": {
+                    meaning: "어색한 분위기를 깨다",
+                    example: "Let me tell a joke to break the ice."
+                },
+                "piece of cake": {
+                    meaning: "아주 쉬운 일",
+                    example: "The test was a piece of cake."
+                },
+                "hit the books": {
+                    meaning: "열심히 공부하다",
+                    example: "I need to hit the books for tomorrow's exam."
+                },
+                "under the weather": {
+                    meaning: "몸이 안 좋다",
+                    example: "I'm feeling under the weather today."
+                },
+                "burn the midnight oil": {
+                    meaning: "밤늦게까지 일하다",
+                    example: "She's been burning the midnight oil to finish the project."
+                },
+                "beat around the bush": {
+                    meaning: "돌려서 말하다",
+                    example: "Stop beating around the bush and tell me what happened."
+                }
+            };
+
+            const data = fallbackData[idiom] || {
+                meaning: "숙어의 의미를 찾을 수 없습니다",
+                example: `"${idiom}" 사용 예시입니다.`
+            };
+
+            return {
+                idiom: idiom,
+                meaning: data.meaning,
+                example: data.example,
+                quiz: generateQuiz(idiom, data.meaning)
+            };
+        }
+
+        // 퀴즈 자동 생성
+        function generateQuiz(idiom, meaning) {
+            const wrongOptions = [
+                "직역적 의미",
+                "반대의 의미",
+                "비슷하지만 다른 의미"
+            ];
+
+            const options = [meaning, ...wrongOptions];
+            const shuffled = options.sort(() => Math.random() - 0.5);
+            const correctIndex = shuffled.indexOf(meaning);
+
+            return {
+                question: `다음 중 '${idiom}'의 의미는?`,
+                options: shuffled,
+                correct: correctIndex
+            };
+        }
+
+        // 오류 메시지 표시
+        function showError(message) {
+            const errorDiv = getElement('errorMessage');
+            const errorText = getElement('errorText');
+            if (errorText) {
+                errorText.textContent = message;
+            }
+            showElement(errorDiv);
+            
+            setTimeout(() => {
+                hideElement(errorDiv);
+            }, 5000);
+        }
+
+        // 통계 업데이트
+        function updateStats() {
+            const streakElement = getElement('streakCount');
+            const totalElement = getElement('totalLearned');
+            const scoreElement = getElement('quizScore');
+
+            if (streakElement) streakElement.textContent = appState.stats.streak;
+            if (totalElement) totalElement.textContent = appState.stats.total;
+            
+            if (scoreElement) {
+                const accuracy = appState.stats.attempts > 0 ? Math.round((appState.stats.correct / appState.stats.attempts) * 100) : 0;
+                scoreElement.textContent = accuracy + '%';
+            }
+        }
+
+        // 알람 관련 함수들
+        function setAlarm() {
+            const timeInput = getElement('alarmTime');
+            const alarmTime = timeInput ? timeInput.value : '';
+            
+            if (!alarmTime) {
+                alert('시간을 선택해주세요.');
+                return;
+            }
+
+            scheduleAlarmWithoutNotification(alarmTime);
+        }
+
+        function scheduleAlarmWithoutNotification(timeString) {
+            const [hours, minutes] = timeString.split(':').map(Number);
+            const now = new Date();
+            const alarmDate = new Date();
+            alarmDate.setHours(hours, minutes, 0, 0);
+
+            if (alarmDate <= now) {
+                alarmDate.setDate(alarmDate.getDate() + 1);
+            }
+
+            const timeUntilAlarm = alarmDate.getTime() - now.getTime();
+
+            if (appState.alarmTimeout) {
+                clearTimeout(appState.alarmTimeout);
+            }
+
+            appState.alarmTimeout = setTimeout(() => {
+                showAlarmModal();
+            }, timeUntilAlarm);
+
+            localStorage.setItem('alarmTime', timeString);
+            localStorage.setItem('alarmSet', 'true');
+            
+            updateAlarmStatus(true, timeString);
+        }
+
+        function cancelAlarm() {
+            if (appState.alarmTimeout) {
+                clearTimeout(appState.alarmTimeout);
+                appState.alarmTimeout = null;
+            }
+            localStorage.removeItem('alarmTime');
+            localStorage.removeItem('alarmSet');
+            updateAlarmStatus(false);
+        }
+
+        function updateAlarmStatus(isActive, timeString = '') {
+            const statusDiv = getElement('alarmStatus');
+            if (statusDiv) {
+                if (isActive) {
+                    statusDiv.className = 'mt-4 text-center py-2 px-4 rounded-lg bg-green-100 text-green-700';
+                    statusDiv.textContent = `알람이 ${timeString}에 설정되었습니다`;
+                } else {
+                    statusDiv.className = 'mt-4 text-center py-2 px-4 rounded-lg bg-gray-100 text-gray-600';
+                    statusDiv.textContent = '알람이 설정되지 않았습니다';
+                }
+            }
+        }
+
+        function showAlarmModal() {
+            const modal = getElement('alarmModal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            }
+        }
+
+        function startAlarmLesson() {
+            hideElement('alarmModal');
+            const levels = ['beginner', 'intermediate', 'advanced'];
+            const randomLevel = levels[Math.floor(Math.random() * levels.length)];
+            selectLevel(randomLevel);
+        }
+
+        function snoozeAlarm() {
+            hideElement('alarmModal');
+            appState.alarmTimeout = setTimeout(() => {
+                showAlarmModal();
+            }, 5 * 60 * 1000);
+        }
+
+        function dismissAlarm() {
+            hideElement('alarmModal');
+        }
+
+        // 음성 관련 함수들
+        let preferredVoices = {};
+        
+        function loadVoices() {
+            if (speechSupported) {
+                const voices = speechSynthesis.getVoices();
+                preferredVoices.main = voices.find(v => v.lang.startsWith('en')) || voices[0];
+            }
+        }
+
+        function createOptimizedUtterance(text, options = {}) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            if (preferredVoices.main) {
+                utterance.voice = preferredVoices.main;
+            }
+            utterance.lang = options.lang || 'en-US';
+            utterance.rate = options.rate || 0.85;
+            utterance.pitch = options.pitch || 1.0;
+            utterance.volume = options.volume || 0.9;
+            return utterance;
+        }
+
+        function speakIdiom() {
+            if (!speechSupported || !appState.currentIdiom) return;
+            const utterance = createOptimizedUtterance(appState.currentIdiom.idiom, { rate: 0.8 });
+            speechSynthesis.speak(utterance);
+        }
+
+        function speakExample() {
+            if (!speechSupported || !appState.currentIdiom) return;
+            const utterance = createOptimizedUtterance(appState.currentIdiom.example, { rate: 0.9 });
+            speechSynthesis.speak(utterance);
+        }
+
+        function startListening() {
+            if (!recognitionSupported || !appState.currentIdiom || !appState.recognition) return;
+
+            const listenBtn = getElement('listenBtn');
+            const resultDiv = getElement('recognitionResult');
+            const feedbackDiv = getElement('voiceFeedback');
+
+            if (feedbackDiv) {
+                feedbackDiv.innerHTML = '';
+                feedbackDiv.className = 'p-2 sm:p-3 rounded text-sm sm:text-base';
+            }
+
+            if (listenBtn) {
+                listenBtn.style.backgroundColor = '#10b981';
+            }
+
+            if (resultDiv) {
+                resultDiv.textContent = '듣고 있습니다... 천천히 또박또박 말해주세요';
+            }
+
+            appState.recognition.start();
+
+            appState.recognition.onresult = function(event) {
+                const result = event.results[0][0].transcript.toLowerCase().trim();
+                const target = appState.currentIdiom.idiom.toLowerCase();
+                
+                if (resultDiv) {
+                    resultDiv.innerHTML = `당신의 발음: "<strong>${result}</strong>"`;
+                }
+                
+                const similarity = calculateSimilarity(result, target);
+                
+                setTimeout(() => {
+                    showDetailedFeedback(similarity, result, target);
+                }, 500);
+            };
+
+            appState.recognition.onerror = function(event) {
+                if (resultDiv) {
+                    resultDiv.textContent = '음성 인식 오류가 발생했습니다. 다시 시도해주세요.';
+                }
+                if (feedbackDiv) {
+                    feedbackDiv.innerHTML = '<button class="px-3 py-1 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors text-sm" onclick="startListening()">다시 시도</button>';
+                }
+            };
+
+            appState.recognition.onend = function() {
+                if (listenBtn) {
+                    listenBtn.style.backgroundColor = '';
+                }
+            };
+        }
+
+        function playTargetAudio() {
+            if (!appState.currentIdiom) return;
+            const utterance = createOptimizedUtterance(appState.currentIdiom.idiom, { rate: 0.7 });
+            speechSynthesis.speak(utterance);
+        }
+
+        function showDetailedFeedback(similarity, userSpeech, target) {
+            const feedbackDiv = getElement('voiceFeedback');
+            if (!feedbackDiv) return;
+
+            let feedbackClass = '';
+            let feedbackText = '';
+
+            if (similarity > 0.8) {
+                feedbackClass = 'bg-green-100 text-green-700 border border-green-300';
+                feedbackText = '완벽한 발음입니다!';
+            } else if (similarity > 0.6) {
+                feedbackClass = 'bg-yellow-100 text-yellow-700 border border-yellow-300';
+                feedbackText = '좋은 발음입니다!';
+            } else {
+                feedbackClass = 'bg-red-100 text-red-700 border border-red-300';
+                feedbackText = '다시 도전해보세요!';
+            }
+
+            feedbackDiv.className = `p-2 sm:p-3 rounded ${feedbackClass} text-sm sm:text-base`;
+            feedbackDiv.innerHTML = `
+                <div class="mb-2">${feedbackText}</div>
+                <div class="text-xs sm:text-sm mb-3">정확도: ${Math.round(similarity * 100)}%</div>
+                <div class="flex gap-2 justify-center">
+                    <button class="px-3 py-1 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors text-xs sm:text-sm" onclick="startListening()">다시 연습</button>
+                    <button class="px-3 py-1 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors text-xs sm:text-sm" onclick="playTargetAudio()">목표 발음</button>
+                </div>
+            `;
+        }
+
+        function calculateSimilarity(str1, str2) {
+            const words1 = str1.split(' ');
+            const words2 = str2.split(' ');
+            let matches = 0;
+
+            words1.forEach(word1 => {
+                if (words2.some(word2 => word2.includes(word1) || word1.includes(word2))) {
+                    matches++;
+                }
+            });
+
+            return matches / Math.max(words1.length, words2.length);
+        }
+
+        // 레벨 선택
+        async function selectLevel(level) {
+            appState.currentLevel = level;
+            appState.currentStep = 0;
+            
+            // 버튼 스타일 업데이트
+            const levelBtns = querySelectorAll('.level-btn');
+            levelBtns.forEach(btn => {
+                if (btn.dataset.level === level) {
+                    btn.className = 'level-btn py-3 px-4 bg-gray-700 text-white rounded-lg font-medium text-sm sm:text-base';
+                } else {
+                    btn.className = 'level-btn py-3 px-4 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium text-sm sm:text-base';
+                }
+            });
+            
+            // 학습 섹션 표시
+            showElement('learningSection');
+            
+            // 랜덤 숙어 로드
+            await loadRandomIdiom(level);
+        }
+
+        // 랜덤 숙어 로드
+        async function loadRandomIdiom(level) {
+            const idioms = idiomDatabase[level];
+            const randomIdiom = idioms[Math.floor(Math.random() * idioms.length)];
+            
+            try {
+                appState.currentIdiom = await fetchIdiomData(randomIdiom);
+                displayIdiom();
+                updateProgress(25);
+            } catch (error) {
+                showError('숙어 데이터를 불러오는데 실패했습니다.');
+                console.error('숙어 로드 오류:', error);
+            }
+        }
+
+        // 숙어 정보 표시
+        function displayIdiom() {
+            if (!appState.currentIdiom) return;
+
+            const titleElement = getElement('idiomTitle');
+            const meaningElement = getElement('idiomMeaning');
+            const exampleElement = getElement('idiomExample');
+
+            if (titleElement) {
+                titleElement.innerHTML = `
+                    ${appState.currentIdiom.idiom}
+                    <button onclick="speakIdiom()" class="w-8 h-8 sm:w-10 sm:h-10 bg-gray-600 text-white rounded-full hover:bg-gray-700 transition-colors text-sm sm:text-base">🔊</button>
+                `;
+            }
+
+            if (meaningElement) {
+                meaningElement.textContent = appState.currentIdiom.meaning;
+            }
+
+            if (exampleElement) {
+                exampleElement.innerHTML = `
+                    "${appState.currentIdiom.example}"
+                    <button onclick="speakExample()" class="w-8 h-8 sm:w-10 sm:h-10 bg-gray-600 text-white rounded-full hover:bg-gray-700 transition-colors text-sm sm:text-base">🔊</button>
+                `;
+            }
+            
+            hideElement('voiceControls');
+        }
+
+        // 새 숙어로 다시 시도
+        async function retryWithNewIdiom() {
+            if (!appState.currentLevel) return;
+            
+            resetLearningState();
+            await loadRandomIdiom(appState.currentLevel);
+        }
+
+        // 학습 상태 초기화
+        function resetLearningState() {
+            appState.currentStep = 0;
+            hideElement('voiceControls');
+            hideElement('quizSection');
+            showElement('quizLearningContent');
+            hideElement('actualQuiz');
+            
+            const idiomCard = querySelector('.idiom-card');
+            if (idiomCard) {
+                idiomCard.style.display = 'block';
+            }
+            
+            const resultElement = getElement('recognitionResult');
+            const feedbackElement = getElement('voiceFeedback');
+            
+            if (resultElement) {
+                resultElement.textContent = '마이크 버튼을 눌러 발음을 시작하세요';
+            }
+            
+            if (feedbackElement) {
+                feedbackElement.innerHTML = '';
+                feedbackElement.className = 'p-2 sm:p-3 rounded text-sm sm:text-base';
+            }
+            
+            showElement('startBtn');
+            hideElement('nextBtn');
+            hideElement('teacherBtn');
+            hideElement('retryBtn');
+        }
+
+        // 학습 시작
+        function startLearning() {
+            appState.currentStep = 1;
+            updateProgress(50);
+            
+            if (speechSupported || recognitionSupported) {
+                showElement('voiceControls');
+                const voiceTarget = getElement('voiceTarget');
+                if (voiceTarget && appState.currentIdiom) {
+                    voiceTarget.textContent = `목표 발음: "${appState.currentIdiom.idiom}"`;
+                }
+            }
+            
+            hideElement('startBtn');
+            showElement('nextBtn');
+        }
+
+        function nextStep() {
+            if (appState.currentStep === 1) {
+                showQuiz();
+            }
+        }
+
+        function showQuiz() {
+            appState.currentStep = 2;
+            updateProgress(75);
+            
+            const quizTitleElement = getElement('quizIdiomTitle');
+            const quizMeaningElement = getElement('quizIdiomMeaning');
+            const quizExampleElement = getElement('quizIdiomExample');
+
+            if (appState.currentIdiom) {
+                if (quizTitleElement) quizTitleElement.textContent = appState.currentIdiom.idiom;
+                if (quizMeaningElement) quizMeaningElement.textContent = appState.currentIdiom.meaning;
+                if (quizExampleElement) quizExampleElement.textContent = `"${appState.currentIdiom.example}"`;
+            }
+            
+            showElement('quizSection');
+            hideElement('nextBtn');
+        }
+
+        function showActualQuiz() {
+            const quiz = appState.currentIdiom.quiz;
+            
+            hideElement('quizLearningContent');
+            const idiomCard = querySelector('.idiom-card');
+            if (idiomCard) {
+                idiomCard.style.display = 'none';
+            }
+            hideElement('voiceControls');
+            
+            const questionElement = getElement('quizQuestion');
+            if (questionElement) {
+                questionElement.textContent = quiz.question;
+            }
+            
+            const optionsDiv = getElement('quizOptions');
+            if (optionsDiv) {
+                optionsDiv.innerHTML = '';
+                
+                quiz.options.forEach((option, index) => {
+                    const optionDiv = document.createElement('div');
+                    optionDiv.className = 'p-3 sm:p-4 border-2 border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors text-sm sm:text-base';
+                    optionDiv.textContent = option;
+                    optionDiv.addEventListener('click', () => selectAnswer(index));
+                    optionsDiv.appendChild(optionDiv);
+                });
+            }
+            
+            showElement('actualQuiz');
+        }
+
+        // 답안 선택
+        function selectAnswer(selectedIndex) {
+            const quiz = appState.currentIdiom.quiz;
+            const options = querySelectorAll('#quizOptions > div');
+            
+            appState.stats.attempts++;
+            
+            if (selectedIndex === quiz.correct) {
+                if (options[selectedIndex]) {
+                    options[selectedIndex].className = 'p-3 sm:p-4 border-2 border-green-500 bg-green-100 rounded-lg text-green-700 text-sm sm:text-base';
+                }
+                appState.stats.correct++;
+                appState.stats.total++;
+                appState.stats.streak++;
+            } else {
+                if (options[selectedIndex]) {
+                    options[selectedIndex].className = 'p-3 sm:p-4 border-2 border-red-500 bg-red-100 rounded-lg text-red-700 text-sm sm:text-base';
+                }
+                if (options[quiz.correct]) {
+                    options[quiz.correct].className = 'p-3 sm:p-4 border-2 border-green-500 bg-green-100 rounded-lg text-green-700 text-sm sm:text-base';
+                }
+                appState.stats.streak = 0;
+            }
+            
+            options.forEach(option => {
+                option.onclick = null;
+                option.style.cursor = 'default';
+            });
+            
+            localStorage.setItem('idiomStats', JSON.stringify(appState.stats));
+            updateStats();
+            
+            setTimeout(() => {
+                const idiomCard = querySelector('.idiom-card');
+                if (idiomCard) {
+                    idiomCard.style.display = 'block';
+                }
+                showElement('teacherBtn');
+                showElement('retryBtn');
+            }, 1500);
+        }
+
+        // 강사 복습
+        function showTeacher() {
+            appState.currentStep = 3;
+            updateProgress(100);
+            
+            const teacherAvatar = getElement('teacherAvatar');
+            const teacherMessage = getElement('teacherMessage');
+            
+            const teachers = {
+                beginner: {
+                    avatar: '👩‍🏫',
+                    message: `오늘 "${appState.currentIdiom.idiom}"를 배웠네요! 이 표현은 일상 대화에서 자주 사용되는 유용한 숙어입니다. 친구들과 대화할 때 자연스럽게 사용해보세요. 내일도 새로운 숙어로 만나요!`
+                },
+                intermediate: {
+                    avatar: '👨‍🏫',
+                    message: `"${appState.currentIdiom.idiom}"는 비즈니스 상황에서도 자주 쓰이는 표현입니다. 비슷한 의미의 다른 표현들도 함께 기억해두시면 더욱 풍부한 영어 표현이 가능할 거예요.`
+                },
+                advanced: {
+                    avatar: '👩‍💼',
+                    message: `"${appState.currentIdiom.idiom}"는 영어권 문화의 깊은 이해가 필요한 고급 표현입니다. 이런 숙어들을 자유자재로 사용할 수 있다면 원어민과의 대화에서도 자신감을 가질 수 있을 것입니다.`
+                }
+            };
+            
+            const teacher = teachers[appState.currentLevel];
+            if (teacherAvatar) teacherAvatar.textContent = teacher.avatar;
+            if (teacherMessage) teacherMessage.textContent = teacher.message;
+            
+            showElement('teacherSection');
+            hideElement('learningSection');
+        }
+
+        // 학습 완료
+        function finishLesson() {
+            hideElement('teacherSection');
+            resetLearningState();
+            hideElement('learningSection');
+            
+            const levelBtns = querySelectorAll('.level-btn');
+            levelBtns.forEach(btn => {
+                btn.className = 'level-btn py-3 px-4 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium text-sm sm:text-base';
+            });
+            
+            appState.currentLevel = null;
+            appState.currentIdiom = null;
+            updateProgress(0);
+            
+            alert('🎉 오늘의 학습을 완료했습니다! 내일도 함께 해요!');
+        }
+
+        // 진행률 업데이트
+        function updateProgress(percent) {
+            const progressFill = getElement('progressFill');
+            if (progressFill) {
+                progressFill.style.width = percent + '%';
+            }
+        }
+
+        // 이벤트 리스너 등록
+        function setupEventListeners() {
+            // 알람 버튼들
+            const setAlarmBtn = getElement('setAlarmBtn');
+            const cancelAlarmBtn = getElement('cancelAlarmBtn');
+            
+            if (setAlarmBtn) {
+                setAlarmBtn.addEventListener('click', setAlarm);
+            }
+            
+            if (cancelAlarmBtn) {
+                cancelAlarmBtn.addEventListener('click', cancelAlarm);
+            }
+
+            // 레벨 선택 버튼들
+            const levelBtns = querySelectorAll('.level-btn');
+            levelBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const level = btn.dataset.level;
+                    if (level) {
+                        selectLevel(level);
+                    }
+                });
+            });
+
+            // 학습 버튼들
+            const startBtn = getElement('startBtn');
+            const nextBtn = getElement('nextBtn');
+            const teacherBtn = getElement('teacherBtn');
+            const retryBtn = getElement('retryBtn');
+            const finishBtn = getElement('finishBtn');
+            const showQuizBtn = getElement('showQuizBtn');
+
+            if (startBtn) startBtn.addEventListener('click', startLearning);
+            if (nextBtn) nextBtn.addEventListener('click', nextStep);
+            if (teacherBtn) teacherBtn.addEventListener('click', showTeacher);
+            if (retryBtn) retryBtn.addEventListener('click', retryWithNewIdiom);
+            if (finishBtn) finishBtn.addEventListener('click', finishLesson);
+            if (showQuizBtn) showQuizBtn.addEventListener('click', showActualQuiz);
+
+            // 음성 관련 버튼들
+            const listenBtn = getElement('listenBtn');
+            const playTargetBtn = getElement('playTargetBtn');
+
+            if (listenBtn) listenBtn.addEventListener('click', startListening);
+            if (playTargetBtn) playTargetBtn.addEventListener('click', playTargetAudio);
+
+            // 알람 모달 버튼들
+            const startAlarmLessonBtn = getElement('startAlarmLessonBtn');
+            const snoozeAlarmBtn = getElement('snoozeAlarmBtn');
+            const dismissAlarmBtn = getElement('dismissAlarmBtn');
+
+            if (startAlarmLessonBtn) startAlarmLessonBtn.addEventListener('click', startAlarmLesson);
+            if (snoozeAlarmBtn) snoozeAlarmBtn.addEventListener('click', snoozeAlarm);
+            // API 키 모달 버튼들 (개선된 버전)
+            const saveApiKeyBtn = getElement('saveApiKeyBtn');
+            const deleteApiKeyBtn = getElement('deleteApiKeyBtn');
+            const testApiKeyBtn = getElement('testApiKeyBtn');
+            const skipApiKeyBtn = getElement('skipApiKeyBtn');
+            const closeApiKeyModalBtn = getElement('closeApiKeyModalBtn');
+            const toggleVisibilityBtn = getElement('toggleApiKeyVisibility');
+
+            if (saveApiKeyBtn) saveApiKeyBtn.addEventListener('click', saveApiKey);
+            if (deleteApiKeyBtn) deleteApiKeyBtn.addEventListener('click', deleteApiKey);
+            if (testApiKeyBtn) testApiKeyBtn.addEventListener('click', testApiKey);
+            if (skipApiKeyBtn) skipApiKeyBtn.addEventListener('click', skipApiKey);
+            if (closeApiKeyModalBtn) closeApiKeyModalBtn.addEventListener('click', hideApiKeyModal);
+            if (toggleVisibilityBtn) toggleVisibilityBtn.addEventListener('click', toggleApiKeyVisibility);
+
+            // API 키 입력에서 Enter 키 처리
+            const apiKeyInput = getElement('apiKeyInput');
+            if (apiKeyInput) {
+                apiKeyInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        saveApiKey();
+                    }
+                });
+                
+                // 실시간 유효성 검사
+                apiKeyInput.addEventListener('input', (e) => {
+                    const value = e.target.value.trim();
+                    const saveBtn = getElement('saveApiKeyBtn');
+                    const testBtn = getElement('testApiKeyBtn');
+                    
+                    if (saveBtn && testBtn) {
+                        const isValid = value.length > 0 && value.startsWith('AIzaSy');
+                        saveBtn.disabled = !value;
+                        testBtn.disabled = !value;
+                        
+                        if (!isValid && value.length > 0) {
+                            saveBtn.className = 'flex-1 px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors';
+                            saveBtn.textContent = '형식 확인';
+                        } else {
+                            saveBtn.className = 'flex-1 px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-800 transition-colors';
+                            saveBtn.textContent = '저장';
+                        }
+                    }
+                });
+            }
+        }
+
+        // 뷰포트 높이 조정
+        function setViewportHeight() {
+            const vh = window.innerHeight * 0.01;
+            document.documentElement.style.setProperty('--vh', `${vh}px`);
+        }
+
+        // 초기화 함수 (비동기 처리 개선)
+        async function initializeApp() {
+            console.log('앱 초기화 시작...');
+            
+            try {
+                // 통계 업데이트
+                updateStats();
+                
+                // 음성 인식 초기화
+                initSpeechRecognition();
+                
+                // 음성 합성 초기화
+                if (speechSupported) {
+                    loadVoices();
+                    speechSynthesis.onvoiceschanged = loadVoices;
+                }
+                
+                // 이벤트 리스너 설정
+                setupEventListeners();
+                
+                // 저장된 알람 복원
+                const savedAlarmTime = localStorage.getItem('alarmTime');
+                const alarmWasSet = localStorage.getItem('alarmSet');
+                
+                if (savedAlarmTime && alarmWasSet) {
+                    const alarmTimeInput = getElement('alarmTime');
+                    if (alarmTimeInput) {
+                        alarmTimeInput.value = savedAlarmTime;
+                    }
+                    scheduleAlarmWithoutNotification(savedAlarmTime);
+                }
+
+                // 뷰포트 높이 설정
+                setViewportHeight();
+                window.addEventListener('resize', setViewportHeight);
+                window.addEventListener('orientationchange', setViewportHeight);
+                
+                // API 키 확인 (비동기)
+                await new Promise(resolve => {
+                    setTimeout(() => {
+                        checkApiKeyOnStartup();
+                        resolve();
+                    }, 100);
+                });
+                
+                // 광고 배너 초기화 (비동기)
+                await new Promise(resolve => {
+                    const initBanner = () => {
+                        const container = document.getElementById('adBannerContainer');
+                        const track = document.getElementById('adBannerTrack');
+
+                        if (container && track) {
+                            try {
+                                adBannerManager = new AdBannerManager();
+                                adBannerManager.init();
+                                resolve();
+                            } catch (error) {
+                                console.error('광고 배너 초기화 오류:', error);
+                                resolve(); // 오류가 있어도 계속 진행
+                            }
+                        } else {
+                            // DOM 요소가 아직 없으면 다시 시도
+                            setTimeout(initBanner, 100);
+                        }
+                    };
+
+                    setTimeout(initBanner, 200);
+                });
+                
+                console.log('앱 초기화 완료!');
+                
+            } catch (error) {
+                console.error('앱 초기화 중 오류 발생:', error);
+                // 오류가 있어도 기본 기능은 작동하도록 함
+                showError('일부 기능 초기화에 실패했습니다. 기본 기능은 정상 작동합니다.');
+            }
+        }
+
+        // DOM 로드 완료 후 초기화 (안전한 에러 처리 포함)
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeApp);
+        } else {
+            initializeApp();
+        }
+
+        // 전역 에러 핸들러 (Promise rejection 처리)
+        window.addEventListener('unhandledrejection', function(event) {
+            console.warn('Unhandled promise rejection:', event.reason);
+            // 메시지 채널 관련 오류는 무시 (브라우저 확장 프로그램 문제)
+            if (event.reason && event.reason.message && 
+                event.reason.message.includes('message channel closed')) {
+                event.preventDefault();
+                return;
+            }
+            // 다른 중요한 오류는 로그만 남기고 앱 동작은 계속
+        });
+
+        // 전역 에러 핸들러 (일반 오류 처리)
+        window.addEventListener('error', function(event) {
+            console.warn('Global error:', event.error);
+            // 앱의 핵심 기능에 영향을 주지 않도록 처리
+        });
+    </script>
+</body>
+</html>
